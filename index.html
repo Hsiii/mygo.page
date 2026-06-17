@@ -5,13 +5,24 @@
   <title>MyGO!!!!!</title>
   <link rel="icon" type="image/png" href="favicon.png?v=2">
   <style>
+    :root {
+      --color-page-bg: #fafaff;
+      --color-heading: #3b3b3b;
+      --color-stats: #555;
+      --color-shadow: rgba(0,0,0,0.09);
+      --space-10: 40px;
+      --radius-image: 16px;
+      --font-heading: 3em;
+      --font-stats: 1.2em;
+    }
+
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
       overflow: hidden;
       font-family: Arial, Helvetica, "微軟正黑體", sans-serif;
-      background: #fafaff;
+      background: var(--color-page-bg);
     }
     body {
       width: 100vw;
@@ -22,10 +33,10 @@
       align-items: center;
     }
     h1 {
-      font-size: 3em;
+      font-size: var(--font-heading);
       font-weight: bold;
-      color: #3b3b3b;
-      margin-bottom: 40px;
+      color: var(--color-heading);
+      margin-bottom: var(--space-10);
       letter-spacing: 0.1em;
       text-align: center;
     }
@@ -34,27 +45,74 @@
       max-height: 60vh;
       width: auto;
       height: auto;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.09);
+      border-radius: var(--radius-image);
+      box-shadow: 0 4px 24px var(--color-shadow);
       display: block;
       margin: 0 auto;
     }
     .stats {
-      margin-top: 40px;
-      font-size: 1.2em;
+      margin-top: var(--space-10);
+      font-size: var(--font-stats);
       font-weight: bold;
-      color: #555;
+      color: var(--color-stats);
       text-align: center;
+    }
+
+    .stats[aria-busy="true"] .stats-result {
+      display: none;
+    }
+
+    .stats[aria-busy="false"] .stats-loading {
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>MyGO!!!!!</h1>
   <img src="mygo.jpg" alt="MyGO圖片">
-  <div class="stats">
-    <script defer src="https://events.vercount.one/js"></script>
-    總共有 <span id="vercount_value_site_uv">載入中...</span> 位新人<br>
-    總共有 <span id="vercount_value_site_pv">載入中...</span> 位迷子
+  <div class="stats" aria-live="polite" aria-busy="true">
+    <div class="stats-loading">
+      載入中...<br>
+      載入中...
+    </div>
+    <div class="stats-result">
+      總共有 <span id="vercount_value_site_uv"></span> 位新人<br>
+      總共有 <span id="vercount_value_site_pv"></span> 位迷子
+    </div>
   </div>
+  <script>
+    const stats = document.querySelector('.stats');
+    const counterIds = ['vercount_value_site_uv', 'vercount_value_site_pv'];
+    const counters = counterIds.map((id) => document.getElementById(id));
+
+    const showResultWhenReady = () => {
+      const hasAllCounts = counters.every((counter) => counter.textContent.trim());
+
+      if (hasAllCounts) {
+        stats.setAttribute('aria-busy', 'false');
+      }
+    };
+
+    const observer = new MutationObserver(showResultWhenReady);
+
+    counters.forEach((counter) => {
+      observer.observe(counter, { childList: true, characterData: true, subtree: true });
+    });
+
+    showResultWhenReady();
+
+    if (new URLSearchParams(window.location.search).has('mockVercount')) {
+      window.setTimeout(() => {
+        document.getElementById('vercount_value_site_uv').textContent = '123';
+        document.getElementById('vercount_value_site_pv').textContent = '456';
+      }, 1200);
+    } else {
+      const vercountScript = document.createElement('script');
+
+      vercountScript.src = 'https://events.vercount.one/js';
+      vercountScript.defer = true;
+      document.body.appendChild(vercountScript);
+    }
+  </script>
 </body>
 </html>
