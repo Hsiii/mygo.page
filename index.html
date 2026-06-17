@@ -52,9 +52,35 @@
   <h1>MyGO!!!!!</h1>
   <img src="mygo.jpg" alt="MyGO圖片">
   <div class="stats">
-    <script defer src="https://events.vercount.one/js"></script>
-    總共有 <span id="vercount_value_site_uv">載入中...</span> 位新人<br>
-    總共有 <span id="vercount_value_site_pv">載入中...</span> 位迷子
+    <span id="stats_loading">載入中...</span>
+    <span id="stats_result" hidden>總共有 <span id="vercount_value_site_uv"></span> 位新人，成為迷子 <span id="vercount_value_site_pv"></span> 次</span>
   </div>
+  <script>
+    const loading = document.getElementById('stats_loading');
+    const result = document.getElementById('stats_result');
+    const uv = document.getElementById('vercount_value_site_uv');
+    const pv = document.getElementById('vercount_value_site_pv');
+    const showResult = () => {
+      if (uv.textContent.trim() && pv.textContent.trim()) {
+        loading.hidden = true;
+        result.hidden = false;
+      }
+    };
+
+    new MutationObserver(showResult).observe(result, { childList: true, characterData: true, subtree: true });
+
+    if (new URLSearchParams(window.location.search).has('mockVercount')) {
+      setTimeout(() => {
+        uv.textContent = '123';
+        pv.textContent = '456';
+      }, 1200);
+    } else {
+      const script = document.createElement('script');
+
+      script.src = 'https://events.vercount.one/js';
+      script.defer = true;
+      document.body.appendChild(script);
+    }
+  </script>
 </body>
 </html>
